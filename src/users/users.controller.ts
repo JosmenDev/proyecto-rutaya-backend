@@ -41,20 +41,24 @@ export class UsersController {
     // Agregar imagen
     @HasRoles(JwtRole.CLIENT)
     @UseGuards(JwtAuthGuard, JwtRolesGuard)
-    @Post('updateWithImage/:id')
+    @Put('upload/:id')
     @UseInterceptors(FileInterceptor('file'))
-    updateWidthImage(@UploadedFile(
-        new ParseFilePipe({
-            validators: [
-                new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }),
-                new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
-            ],
-        }),
-    ) 
-    file: Express.Multer.File,
-    @Param('id', ParseIntPipe) id: number, @Body() user: UpdateUserDto) {
-        console.log(file);
-        this.UsersService.updateWithImage(file, id, user);
+    updateWidthImage(
+        @UploadedFile(
+            new ParseFilePipe(
+                {
+                    validators: [
+                        new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 10 }),
+                        new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+                    ],
+                }
+            ),
+        ) 
+        file: Express.Multer.File,
+        @Param('id', ParseIntPipe) id: number, 
+        @Body() user: UpdateUserDto
+    ){
+        // console.log(file);
+        return this.UsersService.updateWithImage(file, id, user);
     }
-
 }
