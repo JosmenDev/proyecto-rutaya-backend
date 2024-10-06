@@ -7,6 +7,6 @@ async function bootstrap() {
   // Para poder realizar la validacion
   app.useGlobalPipes(new ValidationPipe());
   // Ip del servidor local
-  await app.listen(3000, '192.168.1.2' || 'localhost');
+  await app.listen(3000, '0.0.0.0');
 }
 bootstrap();
