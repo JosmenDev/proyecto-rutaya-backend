@@ -4,16 +4,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ClientRequest } from './client_requests.entity';
 import { Repository } from 'typeorm';
 import { CreateClientRequestDto } from './dto/create_client_request.dto';
+import { ConfigService } from '@nestjs/config'; // Importa ConfigService
 
-const API_KEY = 'AIzaSyACpdZ7tDxDAyeyW7ocOBD9bwcwJ1AHyJw';
 @Injectable()
 export class ClientRequestsService extends Client {
+    private apiKey: string;
 
     constructor(
         @InjectRepository(ClientRequest) 
         private clientRequestRepository: Repository<ClientRequest>,
+        private configService: ConfigService, // Inyecta ConfigService
     ) {
         super();
+        this.apiKey = this.configService.get<string>('GOOGLE_API_KEY'); // Obtiene la clave de API del .env
     }
 
     async create(clientRequest: CreateClientRequestDto) {
@@ -51,7 +54,7 @@ export class ClientRequestsService extends Client {
         const googleResponse = await this.distancematrix({
             params: {
                 mode: TravelMode.driving,
-                key: API_KEY,
+                key: this.apiKey, // Usa la clave de API obtenida de las variables de entorno
                 origins: [
                     {
                         lat: origin_lat,
@@ -67,8 +70,8 @@ export class ClientRequestsService extends Client {
             }
         });
         return {
-            "destination_addresses" : googleResponse.data.destination_addresses[0],
-            "origin_addresses" : googleResponse.data.origin_addresses[0],
+            "destination_addresses": googleResponse.data.destination_addresses[0],
+            "origin_addresses": googleResponse.data.origin_addresses[0],
             "distance": {
                 "text": googleResponse.data.rows[0].elements[0].distance.text,
                 "value": (googleResponse.data.rows[0].elements[0].distance.value / 1000)
