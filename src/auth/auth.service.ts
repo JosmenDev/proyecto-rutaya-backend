@@ -82,7 +82,6 @@ export class AuthService {
         }
 
         // Traer los roles de usuarios
-        // ["ADMIN", "CLIENT"]
         const rolesIds = userFound.roles.map(rol => rol.id);
 
         // Generar Token
@@ -95,9 +94,6 @@ export class AuthService {
 
         // ocultar o quitar el password de la data que se obtiene
         delete data.user.password
-
         return data;
-        
-
     }
 }

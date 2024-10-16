@@ -1,10 +1,11 @@
 import { Client, DistanceMatrixResponseData, TravelMode } from '@googlemaps/google-maps-services-js';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ClientRequest } from './client_requests.entity';
+import { ClientRequest, Status } from './client_requests.entity';
 import { Repository } from 'typeorm';
 import { CreateClientRequestDto } from './dto/create_client_request.dto';
 import { ConfigService } from '@nestjs/config'; // Importa ConfigService
+import { UpdateTripSelectRequestDto } from './dto/update_trip_select_request.dto';
 
 @Injectable()
 export class ClientRequestsService extends Client {
@@ -28,21 +29,94 @@ export class ClientRequestsService extends Client {
                         pickup_description,
                         destination_description,
                         pickup_position,
-                        destination_position
+                        destination_position,
+                        pickup_stop_position,
+                        destination_stop_position
                     )
                 VALUES (
                     ${clientRequest.id_client},
                     '${clientRequest.pickup_description}',
                     '${clientRequest.destination_description}',
                     ST_GeomFromText('POINT(${clientRequest.pickup_lat} ${clientRequest.pickup_lng})', 4326),
+                    ST_GeomFromText('POINT(${clientRequest.destination_lat} ${clientRequest.destination_lng})', 4326),
+                    ST_GeomFromText('POINT(${clientRequest.pickup_lat} ${clientRequest.pickup_lng})', 4326),
                     ST_GeomFromText('POINT(${clientRequest.destination_lat} ${clientRequest.destination_lng})', 4326)
                 )
+            `);
+            const data = await this.clientRequestRepository.query(`SELECT MAX(id) AS id from client_requests`);
+            console.log('ID CLIENT REQUEST: ', data[0].id);
+            return Number(data[0].id);
+        } catch (error) {
+            console.error('Error creando la solicitud de ruta:', error);
+            throw new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updateRouteSelect(clientRequest: UpdateTripSelectRequestDto) {
+        try {
+            await this.clientRequestRepository.query(`
+                UPDATE
+                    client_requests
+                SET
+                    agency_long_name = '${clientRequest.agency_long_name}',
+                    pickup_stop_description = '${clientRequest.pickup_stop_description}',
+                    destination_stop_description = '${clientRequest.destination_stop_description}',
+                    pickup_stop_position = ST_GeomFromText('POINT(${clientRequest.pickup_stop_lat} ${clientRequest.pickup_stop_lng})', 4326),
+                    destination_stop_position = ST_GeomFromText('POINT(${clientRequest.destination_stop_lat} ${clientRequest.destination_stop_lng})', 4326),
+                    distance_route = '${clientRequest.distance_route}',
+                    time_route = '${clientRequest.time_route}',
+                    tarifa_route = '${clientRequest.tarifa_route}',
+                    status = '${Status.TRAVELLING}',
+                    updated_at = NOW()
+                WHERE
+                    id = ${clientRequest.id}
             `);
             return true;
         } catch (error) {
             console.error('Error creando la solicitud de ruta:', error);
             throw new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    async getByClientRequest(id_client_request: number){ 
+        const data = await this.clientRequestRepository.query(`
+            SELECT
+                CR.id,
+                CR.id_client,
+                CR.pickup_description,
+                CR.destination_description,
+                CR.agency_long_name,
+                CR.status,
+                CR.tarifa_route,
+                CR.pickup_position,
+                CR.destination_position,
+                CR.pickup_stop_position,
+                CR.destination_stop_position,
+                JSON_OBJECT(
+                    "name", U.name,
+                    "phone", U.phone,
+                    "image", U.image
+                ) AS client
+            FROM
+                client_requests AS CR
+            INNER JOIN
+                users AS U
+            ON
+                U.id = CR.id_client
+            WHERE
+                CR.id = ${id_client_request} AND CR.status = '${Status.TRAVELLING}'
+        `);
+        return {
+            ...data[0],
+            'pickup_lat': data[0].pickup_position.y,
+            'pickup_lng': data[0].pickup_position.x,
+            'destination_lat': data[0].destination_position.y,
+            'destination_lng': data[0].destination_position.x,
+            'pickup_stop_lat': data[0].pickup_stop_position.y,
+            'pickup_stop_lng': data[0].pickup_stop_position.x,
+            'destination_stop_lat': data[0].destination_stop_position.y,
+            'destination_stop_lng': data[0].destination_stop_position.x,
+        };
     }
 
     async getTimeAndDistanceClienteRequest(

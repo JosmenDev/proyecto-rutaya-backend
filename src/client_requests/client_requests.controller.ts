@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ClientRequestsService } from './client_requests.service';
 import { CreateClientRequestDto } from './dto/create_client_request.dto';
+import { UpdateTripSelectRequestDto } from './dto/update_trip_select_request.dto';
 
 @Controller('client-requests')
 export class ClientRequestsController {
@@ -25,5 +26,15 @@ export class ClientRequestsController {
     @Post()
     create(@Body() clientRequest: CreateClientRequestDto) {
         return this.ClientRequestsService.create(clientRequest);
+    }
+
+    @Put()
+    updateTripSelect(@Body() clientRequest: UpdateTripSelectRequestDto) {
+        return this.ClientRequestsService.updateRouteSelect(clientRequest);
+    }
+
+    @Get(':id_client_request')
+    getByClientRequest(@Param('id_client_request') id_client_request: number) {
+        return this.ClientRequestsService.getByClientRequest(id_client_request);
     }
 }
