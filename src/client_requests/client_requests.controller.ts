@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ClientRequestsService } from './client_requests.service';
 import { CreateClientRequestDto } from './dto/create_client_request.dto';
 import { UpdateTripSelectRequestDto } from './dto/update_trip_select_request.dto';
+import { UpdateStatusClientRequestDto } from './dto/update_status_client_request.dto';
 
 @Controller('client-requests')
 export class ClientRequestsController {
@@ -36,5 +37,10 @@ export class ClientRequestsController {
     @Get(':id_client_request')
     getByClientRequest(@Param('id_client_request') id_client_request: number) {
         return this.ClientRequestsService.getByClientRequest(id_client_request);
+    }
+
+    @Put('update_status')
+    updateStatus(@Body() updateStatus: UpdateStatusClientRequestDto) {
+        return this.ClientRequestsService.updateStatus(updateStatus);
     }
 }

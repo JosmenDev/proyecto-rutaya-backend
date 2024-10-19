@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SocketModule } from './socket/socket.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
@@ -24,6 +25,7 @@ import { ClientRequestsModule } from './client_requests/client_requests.module';
     ConfigModule.forRoot({
       isGlobal: true, // Hace que las variables de entorno estén disponibles en todos los módulos
     }),
+    SocketModule,
     UsersModule,
     AuthModule,
     RolesModule,

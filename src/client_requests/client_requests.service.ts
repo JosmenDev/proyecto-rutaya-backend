@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { CreateClientRequestDto } from './dto/create_client_request.dto';
 import { ConfigService } from '@nestjs/config'; // Importa ConfigService
 import { UpdateTripSelectRequestDto } from './dto/update_trip_select_request.dto';
+import { UpdateStatusClientRequestDto } from './dto/update_status_client_request.dto';
 
 @Injectable()
 export class ClientRequestsService extends Client {
@@ -78,6 +79,24 @@ export class ClientRequestsService extends Client {
         }
     }
 
+    async updateStatus(updateStatusDto: UpdateStatusClientRequestDto) {
+        try {
+            await this.clientRequestRepository.query(`
+                UPDATE
+                    client_requests
+                SET
+                    status = '${updateStatusDto.status}',
+                    updated_at = NOW()
+                WHERE
+                    id = ${updateStatusDto.id_client_request}
+            `);
+            return true;
+        } catch (error) {
+            console.error('Error actaizando estado:', error);
+            throw new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async getByClientRequest(id_client_request: number){ 
         const data = await this.clientRequestRepository.query(`
             SELECT
@@ -87,6 +106,7 @@ export class ClientRequestsService extends Client {
                 CR.destination_description,
                 CR.agency_long_name,
                 CR.status,
+                CR.distance_route,
                 CR.tarifa_route,
                 CR.pickup_position,
                 CR.destination_position,
