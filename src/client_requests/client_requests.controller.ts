@@ -43,4 +43,9 @@ export class ClientRequestsController {
     updateStatus(@Body() updateStatus: UpdateStatusClientRequestDto) {
         return this.ClientRequestsService.updateStatus(updateStatus);
     }
+
+    @Get('client/:id_client')
+    getByClientTripsHistory(@Param('id_client') id_client: number) {
+        return this.ClientRequestsService.getByClientTripsHistory(id_client);
+    }
 }

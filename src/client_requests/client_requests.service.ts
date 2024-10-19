@@ -116,7 +116,9 @@ export class ClientRequestsService extends Client {
                     "name", U.name,
                     "phone", U.phone,
                     "image", U.image
-                ) AS client
+                ) AS client,
+                -- Calcula la diferencia de tiempo en formato mm:ss
+                DATE_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, CR.created_at, CR.updated_at)), '%i:%s') AS duration
             FROM
                 client_requests AS CR
             INNER JOIN
@@ -126,6 +128,7 @@ export class ClientRequestsService extends Client {
             WHERE
                 CR.id = ${id_client_request} AND CR.status = '${Status.TRAVELLING}'
         `);
+        
         return {
             ...data[0],
             'pickup_lat': data[0].pickup_position.y,
@@ -136,8 +139,45 @@ export class ClientRequestsService extends Client {
             'pickup_stop_lng': data[0].pickup_stop_position.x,
             'destination_stop_lat': data[0].destination_stop_position.y,
             'destination_stop_lng': data[0].destination_stop_position.x,
+            'duration': data[0].duration // Agrega la duración en formato mm:ss
         };
     }
+
+    async getByClientTripsHistory(id_client: number){ 
+        const data = await this.clientRequestRepository.query(`
+            SELECT
+                CR.id,
+                CR.id_client,
+                CR.pickup_description,
+                CR.destination_description,
+                CR.agency_long_name,
+                CR.status,
+                CR.distance_route,
+                CR.tarifa_route,
+                CR.pickup_position,
+                CR.destination_position,
+                CR.pickup_stop_position,
+                CR.destination_stop_position,
+                JSON_OBJECT(
+                    "name", U.name,
+                    "phone", U.phone,
+                    "image", U.image
+                ) AS client,
+                -- Calcula la diferencia de tiempo en formato mm:ss
+                DATE_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, CR.created_at, CR.updated_at)), '%i:%s') AS duration
+            FROM
+                client_requests AS CR
+            INNER JOIN
+                users AS U
+            ON
+                U.id = CR.id_client
+            WHERE
+                CR.id_client = ${id_client} AND CR.status = '${Status.FINISHED}'
+        `);
+        
+        return data;
+    }
+    
 
     async getTimeAndDistanceClienteRequest(
         origin_lat: number,
