@@ -164,6 +164,7 @@ export class ClientRequestsService extends Client {
                     "image", U.image
                 ) AS client,
                 -- Calcula la diferencia de tiempo en formato mm:ss
+                DATE_FORMAT(CR.updated_at, '%Y-%m-%d') AS date,
                 DATE_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, CR.created_at, CR.updated_at)), '%i:%s') AS duration
             FROM
                 client_requests AS CR
