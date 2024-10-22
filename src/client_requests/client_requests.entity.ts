@@ -96,6 +96,12 @@ export class ClientRequest {
     tarifa_route: number;
 
     @Column({
+        type: 'time',  // Definimos el tipo como TIME
+        nullable: true,
+    })
+    time_route_final: string;
+
+    @Column({
         type: 'enum',
         enum: Status,
         default: Status.CREATED

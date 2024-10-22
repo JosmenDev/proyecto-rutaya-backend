@@ -86,13 +86,14 @@ export class ClientRequestsService extends Client {
                     client_requests
                 SET
                     status = '${updateStatusDto.status}',
+                    time_route_final = TIMEDIFF(NOW(), updated_at),  -- Calcula la diferencia en formato TIME
                     updated_at = NOW()
                 WHERE
                     id = ${updateStatusDto.id_client_request}
             `);
             return true;
         } catch (error) {
-            console.error('Error actaizando estado:', error);
+            console.error('Error actualizando estado:', error);
             throw new HttpException('Error del servidor', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -106,6 +107,7 @@ export class ClientRequestsService extends Client {
                 CR.destination_description,
                 CR.agency_long_name,
                 CR.status,
+                CR.time_route,
                 CR.distance_route,
                 CR.tarifa_route,
                 CR.pickup_position,
@@ -118,7 +120,7 @@ export class ClientRequestsService extends Client {
                     "image", U.image
                 ) AS client,
                 -- Calcula la diferencia de tiempo en formato mm:ss
-                DATE_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, CR.created_at, CR.updated_at)), '%i:%s') AS duration
+                TIME_FORMAT(time_route_final, '%i:%S') AS duration
             FROM
                 client_requests AS CR
             INNER JOIN
@@ -131,14 +133,14 @@ export class ClientRequestsService extends Client {
         
         return {
             ...data[0],
-            'pickup_lat': data[0].pickup_position.y,
-            'pickup_lng': data[0].pickup_position.x,
-            'destination_lat': data[0].destination_position.y,
-            'destination_lng': data[0].destination_position.x,
-            'pickup_stop_lat': data[0].pickup_stop_position.y,
-            'pickup_stop_lng': data[0].pickup_stop_position.x,
-            'destination_stop_lat': data[0].destination_stop_position.y,
-            'destination_stop_lng': data[0].destination_stop_position.x,
+            'pickup_lat': data[0].pickup_position ? data[0].pickup_position.y : null,
+            'pickup_lng': data[0].pickup_position ? data[0].pickup_position.x : null,
+            'destination_lat': data[0].destination_position ? data[0].destination_position.y : null,
+            'destination_lng': data[0].destination_position ? data[0].destination_position.x : null,
+            'pickup_stop_lat': data[0].pickup_stop_position ? data[0].pickup_stop_position.y : null,
+            'pickup_stop_lng': data[0].pickup_stop_position ? data[0].pickup_stop_position.x : null,
+            'destination_stop_lat': data[0].destination_stop_position ? data[0].destination_stop_position.y : null,
+            'destination_stop_lng': data[0].destination_stop_position ? data[0].destination_stop_position.x : null,
             'duration': data[0].duration // Agrega la duración en formato mm:ss
         };
     }
@@ -152,6 +154,7 @@ export class ClientRequestsService extends Client {
                 CR.destination_description,
                 CR.agency_long_name,
                 CR.status,
+                CR.time_route,
                 CR.distance_route,
                 CR.tarifa_route,
                 CR.pickup_position,
@@ -165,7 +168,7 @@ export class ClientRequestsService extends Client {
                 ) AS client,
                 -- Calcula la diferencia de tiempo en formato mm:ss
                 DATE_FORMAT(CR.updated_at, '%Y-%m-%d') AS date,
-                DATE_FORMAT(SEC_TO_TIME(TIMESTAMPDIFF(SECOND, CR.created_at, CR.updated_at)), '%i:%s') AS duration
+                TIME_FORMAT(time_route_final, '%i:%S') AS duration
             FROM
                 client_requests AS CR
             INNER JOIN
