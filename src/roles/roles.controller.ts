@@ -11,8 +11,8 @@ export class RolesController {
 
     constructor(private RolesService: RolesService) {}
 
-    @HasRoles(JwtRole.ADMIN)
-    @UseGuards(JwtAuthGuard, JwtRolesGuard)
+    // @HasRoles(JwtRole.ADMIN)
+    // @UseGuards(JwtAuthGuard, JwtRolesGuard)
     @Post()
     create(@Body() rol: CreateRolDto) {
         return this.RolesService.create(rol);
