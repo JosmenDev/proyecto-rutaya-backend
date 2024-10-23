@@ -1,12 +1,11 @@
-// Cargar dotenv para usar variables de entorno
 require('dotenv').config();
-
 const { Storage } = require('@google-cloud/storage');
 const { format } = require('util');
+const url = require('url');
 const { v4: uuidv4 } = require('uuid');
 const uuid = uuidv4();
 
-// Crear el objeto serviceAccount a partir de las variables de entorno
+
 const serviceAccount = {
     projectId: process.env.FIREBASE_PROJECT_ID,
     private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),  // Reemplazar saltos de línea
@@ -18,50 +17,49 @@ const serviceAccount = {
     client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
 };
 
-// Inicializar Firebase Storage usando las credenciales de las variables de entorno
 const storage = new Storage({
-    projectId: serviceAccount.projectId,
-    credentials: serviceAccount,  // Usamos el objeto serviceAccount
+    projectId: "test-project-3657a",
+    keyFilename: serviceAccount
 });
 
 const bucket = storage.bucket("gs://test-project-3657a.appspot.com/");
 
 /**
  * Subir el archivo a Firebase Storage
- * @param {object} file - Archivo a subir
- * @param {string} pathImage - Ruta donde se almacenará la imagen
+ * file objeto que sera almacenado en Firebase Storage
  */
 module.exports = (file, pathImage) => {
     return new Promise((resolve, reject) => {
+        
         if (pathImage) {
-        const fileUpload = bucket.file(`${pathImage}`);
+            if (pathImage != null || pathImage != undefined) {
 
-        const blobStream = fileUpload.createWriteStream({
-            metadata: {
-            contentType: 'image/png',
-            metadata: {
-                firebaseStorageDownloadTokens: uuid,
-            },
-            },
-            resumable: false,
-        });
+                let fileUpload = bucket.file(`${pathImage}`);
+                const blobStream = fileUpload.createWriteStream({
+                    metadata: {
+                        contentType: 'image/png',
+                        metadata: {
+                            firebaseStorageDownloadTokens: uuid,
+                        }
+                    },
+                    resumable: false
 
-        blobStream.on('error', (error) => {
-            console.log('Error al subir archivo a Firebase:', error);
-            reject('Something is wrong! Unable to upload at the moment.');
-        });
+                });
 
-        blobStream.on('finish', () => {
-            const url = format(
-            `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${fileUpload.name}?alt=media&token=${uuid}`,
-            );
-            console.log('URL de Cloud Storage:', url);
-            resolve(url);
-        });
+                blobStream.on('error', (error) => {
+                    console.log('Error al subir archivo a firebase', error);
+                    reject('Something is wrong! Unable to upload at the moment.');
+                });
 
-        blobStream.end(file.buffer);
-        } else {
-        reject('No pathImage provided.');
+                blobStream.on('finish', () => {
+                    // The public URL can be used to directly access the file via HTTP.
+                    const url = format(`https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${fileUpload.name}?alt=media&token=${uuid}`);
+                    console.log('URL DE CLOUD STORAGE ', url);
+                    resolve(url);
+                });
+
+                blobStream.end(file.buffer);
+            }
         }
     });
-};
+}
