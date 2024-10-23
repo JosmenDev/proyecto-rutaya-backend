@@ -98,7 +98,7 @@ export class ClientRequestsService extends Client {
         }
     }
 
-    async getByClientRequest(id_client_request: number){ 
+    async getByClientRequest(id_client_request: number) {
         const data = await this.clientRequestRepository.query(`
             SELECT
                 CR.id,
@@ -119,7 +119,6 @@ export class ClientRequestsService extends Client {
                     "phone", U.phone,
                     "image", U.image
                 ) AS client,
-                -- Calcula la diferencia de tiempo en formato mm:ss
                 TIME_FORMAT(time_route_final, '%i:%S') AS duration
             FROM
                 client_requests AS CR
@@ -130,20 +129,35 @@ export class ClientRequestsService extends Client {
             WHERE
                 CR.id = ${id_client_request} AND CR.status = '${Status.TRAVELLING}'
         `);
-        
+    
+        if (!data[0]) { 
+            console.error(`No se encontró la solicitud con el id: ${id_client_request}`);
+            // throw new Error('No se encontró la solicitud con el id especificado');
+        }
+    
+        // Imprimir todos los datos obtenidos para depurar
+        console.log('Datos obtenidos:', data[0]);
+    
+        const pickup_position = data[0].pickup_position || {};
+        const destination_position = data[0].destination_position || {};
+        const pickup_stop_position = data[0].pickup_stop_position || {};
+        const destination_stop_position = data[0].destination_stop_position || {};
+    
         return {
             ...data[0],
-            'pickup_lat': data[0].pickup_position ? data[0].pickup_position.y : null,
-            'pickup_lng': data[0].pickup_position ? data[0].pickup_position.x : null,
-            'destination_lat': data[0].destination_position ? data[0].destination_position.y : null,
-            'destination_lng': data[0].destination_position ? data[0].destination_position.x : null,
-            'pickup_stop_lat': data[0].pickup_stop_position ? data[0].pickup_stop_position.y : null,
-            'pickup_stop_lng': data[0].pickup_stop_position ? data[0].pickup_stop_position.x : null,
-            'destination_stop_lat': data[0].destination_stop_position ? data[0].destination_stop_position.y : null,
-            'destination_stop_lng': data[0].destination_stop_position ? data[0].destination_stop_position.x : null,
-            'duration': data[0].duration // Agrega la duración en formato mm:ss
+            'pickup_lat': pickup_position?.y || null,
+            'pickup_lng': pickup_position?.x || null,
+            'destination_lat': destination_position?.y || null,
+            'destination_lng': destination_position?.x || null,
+            'pickup_stop_lat': pickup_stop_position?.y || null,
+            'pickup_stop_lng': pickup_stop_position?.x || null,
+            'destination_stop_lat': destination_stop_position?.y || null,
+            'destination_stop_lng': destination_stop_position?.x || null,
+            'duration': data[0].duration
         };
     }
+    
+    
 
     async getByClientTripsHistory(id_client: number){ 
         const data = await this.clientRequestRepository.query(`
