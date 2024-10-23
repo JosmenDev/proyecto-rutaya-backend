@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRolDto } from './dto/create-rol.dto';
 import { HasRoles } from 'src/auth/jwt/has-roles';
@@ -16,5 +16,11 @@ export class RolesController {
     @Post()
     create(@Body() rol: CreateRolDto) {
         return this.RolesService.create(rol);
+    }
+
+    // Nueva ruta pública para obtener todos los roles
+    @Get()
+    findAll() {
+        return this.RolesService.findAll(); // Llama al servicio para obtener todos los roles
     }
 }

@@ -13,4 +13,9 @@ export class RolesService {
         const newRol = this.rolesRepository.create(rol);
         return this.rolesRepository.save(newRol);
     }
+
+    // Método para obtener todos los roles
+    findAll() {
+        return this.rolesRepository.find(); // Devuelve todos los registros en la tabla roles
+    }
 }
