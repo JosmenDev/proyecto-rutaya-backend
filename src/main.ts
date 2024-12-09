@@ -8,6 +8,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   
   // Ip del servidor local
-  await app.listen(3000, '0.0.0.0');
+  await app.listen(process.env.DB_PORT ?? 3000);
 }
 bootstrap();
