@@ -8,7 +8,7 @@ const uuid = uuidv4();
 
 const storage = new Storage({
     projectId: "test-project-3657a",
-    keyFilename: './serviceAccountKey.json'
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
 const bucket = storage.bucket("gs://test-project-3657a.appspot.com/");
