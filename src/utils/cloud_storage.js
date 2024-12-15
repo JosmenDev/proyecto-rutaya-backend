@@ -7,11 +7,11 @@ const uuid = uuidv4();
 
 
 const storage = new Storage({
-    projectId: "test-project-3657a",
+    projectId: process.env.PROJECT_ID,
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
-const bucket = storage.bucket("gs://test-project-3657a.appspot.com/");
+const bucket = storage.bucket(process.env.BUCKET_NAME);
 
 /**
  * Subir el archivo a Firebase Storage
