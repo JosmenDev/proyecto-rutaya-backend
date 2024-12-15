@@ -52,8 +52,8 @@ export class UsersController {
                         new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
                     ],
                 }
-            ),
-        ) 
+            ),  
+        )   
         file: Express.Multer.File,
         @Param('id', ParseIntPipe) id: number, 
         @Body() user: UpdateUserDto
